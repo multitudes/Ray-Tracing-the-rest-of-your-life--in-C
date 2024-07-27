@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/22 14:45:44 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/27 13:34:34 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/27 13:56:12 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@
 #include "rotated.h"
 
 // approximate the value of PI using monte carlo method w jittering
-int main()
+int pi_approx_montecarlo_w_jittering()
 {
 	int inside_circle_stratified = 0;
 	int sqrt_N = 1000;
@@ -53,6 +53,7 @@ int main()
 	}
 	printf("PI is approximately %f\n", 4 * inside_circle_stratified / (double)(sqrt_N * sqrt_N));
     //PI is approximately 3.141660
+	return 0;
 }
 
 
@@ -73,8 +74,8 @@ int montecarlo_no_jittering()
 }
 
 
-
-int cornells()
+// cornells box
+int main()
 {
 	// the cornells box
 	t_solid_color red;

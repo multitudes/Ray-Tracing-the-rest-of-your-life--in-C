@@ -66,6 +66,28 @@ I get pi approximately 3.141660. Interestingly the books authors get 3.14146... 
 
 So we will change our rendering method to use stratified sampling.
 
+In our camera struct we will introduce the number of samples per pixel:
+
+```c
+    int    sqrt_spp;             // Square root of number of samples per pixel
+    double recip_sqrt_spp;       // 1 / sqrt_spp
+
+	[in init..]
+	sqrt_spp = int(sqrt(samples_per_pixel));
+    pixel_samples_scale = 1.0 / (sqrt_spp * sqrt_spp);
+    recip_sqrt_spp = 1.0 / sqrt_spp;
+```
+
+before and after the optimization:
+
+
+OK I dont see much difference in the image quality. I am really looking forward to the part where they manage to didnomish the amount of noise in the image.
+<div style="text-align: center;">
+<img src="assets/rotations.png" alt="before" style="width: 45%;display: inline-block;" /> 
+<img src="assets/optimisedcornell1.png" alt="after" style="width: 45%;display: inline-block;" />
+</div>
+
+
 
 ## Links
 - [Raytracing in one weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)

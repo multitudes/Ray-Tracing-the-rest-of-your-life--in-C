@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/22 16:37:03 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/24 17:14:59 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/27 13:54:45 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,10 @@ typedef struct	t_camera
     t_vec3		pixel_delta_u;  // Offset to pixel to the right
     t_vec3		pixel_delta_v;  // Offset to pixel below
 	double		pixel_samples_scale;
+
+	// for stratification optimisation
+	int			sqrt_spp;            // Square root of number of samples per pixel
+    double		recip_sqrt_spp;      // 1 / sqrt_spp
 	t_vec3   	u, v, w;              // Camera frame basis vectors
 	t_vec3  	defocus_disk_u;       // Defocus disk horizontal radius
     t_vec3  	defocus_disk_v;       // Defocus disk vertical radius
@@ -48,8 +52,9 @@ typedef struct	t_camera
 t_camera	camera();
 void		render(t_camera cam, const t_hittablelist world);
 t_color		ray_color(t_camera cam, t_ray *r, int max_deph, const t_hittablelist *world);
-t_ray		get_ray(t_camera *c, int u, int v);
+t_ray		get_ray(t_camera *c, int u, int v, int s_i, int s_j);
 t_vec3		sample_square();
 t_point3	defocus_disk_sample(t_camera *c);
+t_vec3 sample_square_stratified(t_camera *c, int s_i, int s_j);
 
 #endif

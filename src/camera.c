@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/23 10:28:07 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/26 15:15:42 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/27 14:42:04 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,11 +36,12 @@ t_camera camera()
 	t_camera c;
 	
 	// public members
-	c.aspect_ratio = (double)16.0 / 9.0; 	// Ratio of image width over height
-	c.image_width = 100; 					// Rendered image width in pixel count
+	c.aspect_ratio = (double)16.0 / 16.0; 	// Ratio of image width over height
+	c.image_width = 600; 					// Rendered image width in pixel count
     c.samples_per_pixel = 200;				// Count of random samples for each pixel
+	
 	c.max_depth = 50;						// Maximum number of ray bounces into scene
-	c.background = color(100,0,0);			// Scene background color
+	c.background = color(0,0,0);			// Scene background color
 
 	c.vfov = 40; 							// Vertical view angle (field of view)
     c.lookfrom = point3(278, 278, -800);			// Point camera is looking from
@@ -56,6 +57,10 @@ t_camera camera()
 	c.image_height = (c.image_height < 1) ? 1 : c.image_height;
   	
 	c.pixel_samples_scale = 1.0 / c.samples_per_pixel;
+
+	c.sqrt_spp = (int)(sqrt(c.samples_per_pixel));
+    c.pixel_samples_scale = 1.0 / (c.sqrt_spp * c.sqrt_spp);
+    c.recip_sqrt_spp = 1.0 / c.sqrt_spp;
 
 	c.center = c.lookfrom;
 	
@@ -118,11 +123,17 @@ void	render(t_camera c, const t_hittablelist world)
 		for (int i = 0; i < c.image_width; i++)
 		{	
 			t_color pixel_color = color(0,0,0);
-            for (int sample = 0; sample < c.samples_per_pixel; sample++) {
-                    t_ray r = get_ray(&c, i, j);
+            
+			for (int s_j = 0; s_j < c.sqrt_spp; s_j++) {
+                for (int s_i = 0; s_i < c.sqrt_spp; s_i++) {
+			
+                    t_ray r = get_ray(&c, i, j, s_i, s_j);
 					t_color partial = ray_color(c, &r, c.max_depth, &world);
                     pixel_color = vec3add(pixel_color, partial);
-                }
+				}
+			}
+			
+			
 			write_color(file, vec3multscalar(pixel_color, c.pixel_samples_scale));
 		}
 		printf("\rScanlines remaining: %d\n", c.image_height - j - 1);
@@ -170,9 +181,10 @@ t_color	ray_color(t_camera cam, t_ray *r, const int depth, const t_hittablelist 
  * returns: a camera ray originating from the defocus disk and directed at a randomly 
  * sampled point around the pixel location i, j.
  */
-t_ray get_ray(t_camera *c, int i, int j)  
+t_ray get_ray(t_camera *c, int i, int j, int s_i, int s_j)  
 {
-	t_vec3	offset = sample_square();
+
+	t_vec3	offset = sample_square_stratified(c, s_i, s_j);
 	t_vec3	pixel_sample = vec3add(c->pixel00_loc, 
 						vec3add(vec3multscalar(c->pixel_delta_u, (i + offset.x)),
 						vec3multscalar(c->pixel_delta_v, (j + offset.y))));
@@ -181,6 +193,17 @@ t_ray get_ray(t_camera *c, int i, int j)
 	t_vec3 ray_direction = vec3substr(pixel_sample, ray_origin);
 	double ray_time = random_double(0, 1);
 	return ray(ray_origin, ray_direction, ray_time);
+}
+
+t_vec3 sample_square_stratified(t_camera *c, int s_i, int s_j)
+{
+	// Returns the vector to a random point in the square sub-pixel specified by grid
+	// indices s_i and s_j, for an idealized unit square pixel [-.5,-.5] to [+.5,+.5].
+
+	double px = ((s_i + random_d()) * c->recip_sqrt_spp) - 0.5;
+	double py = ((s_j + random_d()) * c->recip_sqrt_spp) - 0.5;
+
+	return vec3(px, py, 0);
 }
 
 /*
