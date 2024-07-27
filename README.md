@@ -150,7 +150,15 @@ In the camera ray function we will use the PDF to sample the light sources takin
 	return vec3add(color_from_emission, color_from_scatter);
 }
 ```
-Right now since we did not implement the PDF we get exactly the same picture as before. 
+Right now since we did not implement the PDF we get exactly the same picture as before.  
+The problem with sampling uniformly over all directions is that lights are no more likely to be sampled than any arbirary or unimportant direction. We could use shadow rays to solve for the direct lighting at any given point. Instead, I’ll just use a PDF 
+
+So the first step is a test with hardcoded values...
+<div style="text-align: center;">
+<img src="assets/optimizedcornell2.png" alt="test with pdf " style="width: 45%;display: inline-block;" />
+</div>
+
+it looks good... next we will work on it cleaning up the code and...
 
 ## Links
 - [Raytracing in one weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)

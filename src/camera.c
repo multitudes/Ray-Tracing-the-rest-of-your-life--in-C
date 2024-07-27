@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/23 10:28:07 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/27 18:54:50 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/27 19:19:13 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,11 +155,30 @@ t_color	ray_color(t_camera cam, t_ray *r, const int depth, const t_hittablelist 
 	
 	t_ray scattered;
 	t_color attenuation;
-	t_color color_from_emission = rec.mat->emit(rec.mat, rec.u, rec.v, rec.p);
 	double pdf;	
+	
+	t_color color_from_emission = rec.mat->emit(rec.mat, &rec, rec.u, rec.v, rec.p);
+	
 	if (!rec.mat->scatter(rec.mat, r, &rec, &attenuation, &scattered, &pdf))
 		return color_from_emission;
 		
+	
+	t_point3 on_light = point3(random_double(213,343), 554, random_double(227,332));
+	t_point3 to_light = vec3substr(on_light, rec.p);
+	double distance_squared = length_squared(to_light);
+	to_light = unit_vector(to_light);
+
+	if (dot(to_light, rec.normal) < 0)
+		return color_from_emission;
+
+	double light_area = (343-213)*(332-227);
+	double light_cosine = fabs(to_light.y);
+	if (light_cosine < 0.000001)
+		return color_from_emission;
+
+	pdf = distance_squared / (light_cosine * light_area);
+	scattered = ray(rec.p, to_light, r->tm);
+
 	double scattering_pdf = rec.mat->scattering_pdf(rec.mat, r, &rec, &scattered);
 
 	t_color attenuationxscattering_pdf = vec3multscalar(attenuation, scattering_pdf);

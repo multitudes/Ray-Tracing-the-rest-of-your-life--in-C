@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/22 16:37:25 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/27 18:45:33 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/27 19:15:52 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ typedef struct 		s_hit_record t_hit_record;
 typedef struct 		s_material
 {
 	bool 			(*scatter)(void *self, const t_ray *r_in, const t_hit_record *rec, t_color *attenuation, t_ray *scattered, double *pdf);
-	t_color			(*emit)(void *self, double u, double v, t_point3);
+	t_color			(*emit)(void *self, const t_hit_record *rec, double u, double v, t_point3);
 	double 			(*scattering_pdf)(void *self, const t_ray *r_in, const t_hit_record *rec, const t_ray *scattered);
 
 }					t_material;
@@ -71,7 +71,7 @@ bool		metal_scatter(void *self, const t_ray* r_in, const t_hit_record *rec, t_co
 bool		dielectric_scatter(void *self, const t_ray *r_in, const t_hit_record *rec, t_color *attenuation, t_ray *scattered, double *pdf);
 bool 		noscatter(void *self, const t_ray *r_in, const t_hit_record *rec, t_color *attenuation, t_ray *scattered, double *pdf);
 
-t_color		emitlight(void *self, double u, double v, t_point3 p);
-t_color		emitzero(void *self, double u, double v, t_point3 p);
+t_color		emitlight(void *self, const t_hit_record *rec, double u, double v, t_point3 p);
+t_color		emitzero(void *self, const t_hit_record *rec, double u, double v, t_point3 p);
 
 #endif

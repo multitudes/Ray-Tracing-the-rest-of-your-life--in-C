@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/23 15:43:42 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/27 18:58:56 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/27 19:19:43 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,15 +140,18 @@ bool dielectric_scatter(void *self, const t_ray* r_in, const t_hit_record *rec, 
 	return true;
 }
 
-t_color		emitlight(void *self, double u, double v, t_point3 p)
+t_color		emitlight(void *self, const t_hit_record *rec, double u, double v, t_point3 p)
 {
 	t_diffuse_light *light = (t_diffuse_light *)self;
+	if (!rec->front_face)
+		return color(0, 0, 0);
 	return light->texture->value(light->texture ,u, v, &p);
 }
 
-t_color		emitzero(void *self, double u, double v, t_point3 p)
+t_color		emitzero(void *self, const t_hit_record *rec, double u, double v, t_point3 p)
 {
 	(void)self;
+	(void)rec;
 	(void)u;
 	(void)v;
 	(void)p;
