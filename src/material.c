@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/23 15:43:42 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/24 17:07:04 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/27 18:06:13 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ void lambertian_init_tex(t_lambertian *lambertian_material, t_texture *tex)
 {
     lambertian_material->base.scatter = lambertian_scatter; // Assign the scatter function
 	lambertian_material->base.emit = emitzero;
+	lambertian_material->base.scattering_pdf = lambertian_scatter_pdf;
     lambertian_material->albedo = color(0,0,0); // Set the albedo to null
 	lambertian_material->texture = tex;
 }
@@ -77,6 +78,17 @@ bool lambertian_scatter(void* self, const t_ray *r_in, const t_hit_record *rec, 
     }
 
     return true; 
+}
+
+/*
+ * scatter function for a lambertian material
+ */
+double lambertian_scatter_pdf(void* self, const t_ray *r_in, const t_hit_record *rec, const t_ray *scattered) 
+{
+	(void)r_in;
+	(void)self;
+	double cos_theta = dot(rec->normal, unit_vector(scattered->dir));
+        return cos_theta < 0 ? 0 : cos_theta/PI;
 }
 
 /*

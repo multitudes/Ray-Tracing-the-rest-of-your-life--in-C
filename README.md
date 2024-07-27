@@ -106,6 +106,52 @@ for MMonte Carlo ray tracers
 
 Any choice of PDF p will always converge to the right answer, but the closer that p approximates f, the faster that it will converge. 
 
+## our goal is to reduce the noise 
+We’ll do that by constructing a PDF that sends more rays to the light.  
+
+I will add a new function signature in my material.
+```c
+
+typedef struct 		s_material
+{
+	bool 			(*scatter)(void *self, const t_ray *r_in, const t_hit_record *rec, t_color *attenuation, t_ray *scattered);
+	t_color			(*emit)(void *self, double u, double v, t_point3);
+	double 			(*scattering_pdf)(void *self, const t_ray *r_in, const t_hit_record *rec, const t_ray *scattered);
+
+}					t_material;
+```
+
+And add a lambertian_scattering_pdf function to match that signature.
+
+```c
+// in the lambertian init function
+	lambertian_material->base.scattering_pdf = lambertian_scatter_pdf;
+// and the function
+double lambertian_scatter_pdf(void* self, const t_ray *r_in, const t_hit_record *rec, const t_ray *scattered) 
+{
+	(void)r_in;
+	(void)self;
+	double cos_theta = dot(rec->normal, unit_vector(scattered->dir));
+        return cos_theta < 0 ? 0 : cos_theta/PI;
+}
+```
+
+In the camera ray function we will use the PDF to sample the light sources taking into account this new function.
+
+```c
+{
+	...
+	double scattering_pdf = rec.mat->scattering_pdf(rec.mat, r, &rec, &scattered);
+	double pdf = scattering_pdf;
+	t_color attenuationxscattering_pdf = vec3multscalar(attenuation, scattering_pdf);
+	t_color color_from_scatter_partial = vec3mult(attenuationxscattering_pdf, ray_color(cam, &scattered, depth-1, world));
+	t_color color_from_scatter = vec3divscalar(color_from_scatter_partial, pdf);
+		
+	return vec3add(color_from_emission, color_from_scatter);
+}
+```
+Right now since we did not implement the PDF we get exactly the same picture as before. 
+
 ## Links
 - [Raytracing in one weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
 - [Raytracing the next week](https://raytracing.github.io/books/RayTracingTheNextWeek.html)

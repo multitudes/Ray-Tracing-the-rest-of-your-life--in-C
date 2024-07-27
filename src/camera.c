@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/23 10:28:07 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/27 14:42:04 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/27 18:00:47 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,15 +160,15 @@ t_color	ray_color(t_camera cam, t_ray *r, const int depth, const t_hittablelist 
 	if (!rec.mat->scatter(rec.mat, r, &rec, &attenuation, &scattered))
 		return color_from_emission;
 		
-	t_color color_from_scatter = vec3mult(attenuation, ray_color(cam, &scattered, depth-1, world));
+
+	double scattering_pdf = rec.mat->scattering_pdf(rec.mat, r, &rec, &scattered);
+	double pdf = scattering_pdf;
+	//            (attenuation * scattering_pdf * ray_color(scattered, depth-1, world)) / pdf;
+	t_color attenuationxscattering_pdf = vec3multscalar(attenuation, scattering_pdf);
+	t_color color_from_scatter_partial = vec3mult(attenuationxscattering_pdf, ray_color(cam, &scattered, depth-1, world));
+	t_color color_from_scatter = vec3divscalar(color_from_scatter_partial, pdf);
 	
 	return vec3add(color_from_emission, color_from_scatter);
-	
-	// t_vec3 unit_direction = unit_vector(r->dir);
-	// double a = 0.5 * (unit_direction.y + 1.0);
-	// t_color start = vec3multscalar(color(1.0, 1.0, 1.0), 1.0 - a);
-	// t_color end = vec3multscalar(color(0.5, 0.7, 1.0), a);
-	// return vec3add(start, end);
 }
 
 /*

@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/22 14:45:44 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/27 13:56:12 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/27 18:01:17 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,16 @@ int montecarlo_no_jittering()
 	return 0;
 }
 
+int	demo_aspectratio()
+{
+	double aspect_ratio = 16.0 / 9.0;
+	printf("aspect_ratio 16/9 = %f\n", aspect_ratio);
+	int width = 600;
+	int height = (int)(width / aspect_ratio);
+	printf("width = 600 and height = (int)(width / aspect_ratio)=> %d\n", height);
+	printf("dividing width by height I get ? = %f\n", (double)width / height);
+	return 0;
+}
 
 // cornells box
 int main()
