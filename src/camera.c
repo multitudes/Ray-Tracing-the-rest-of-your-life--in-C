@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/23 10:28:07 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/27 18:00:47 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/27 18:54:50 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,14 +156,12 @@ t_color	ray_color(t_camera cam, t_ray *r, const int depth, const t_hittablelist 
 	t_ray scattered;
 	t_color attenuation;
 	t_color color_from_emission = rec.mat->emit(rec.mat, rec.u, rec.v, rec.p);
-	
-	if (!rec.mat->scatter(rec.mat, r, &rec, &attenuation, &scattered))
+	double pdf;	
+	if (!rec.mat->scatter(rec.mat, r, &rec, &attenuation, &scattered, &pdf))
 		return color_from_emission;
 		
-
 	double scattering_pdf = rec.mat->scattering_pdf(rec.mat, r, &rec, &scattered);
-	double pdf = scattering_pdf;
-	//            (attenuation * scattering_pdf * ray_color(scattered, depth-1, world)) / pdf;
+
 	t_color attenuationxscattering_pdf = vec3multscalar(attenuation, scattering_pdf);
 	t_color color_from_scatter_partial = vec3mult(attenuationxscattering_pdf, ray_color(cam, &scattered, depth-1, world));
 	t_color color_from_scatter = vec3divscalar(color_from_scatter_partial, pdf);

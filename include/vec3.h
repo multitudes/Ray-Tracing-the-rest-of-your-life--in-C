@@ -52,6 +52,7 @@ t_vec3		cross(const t_vec3 a, const t_vec3 b);
 t_vec3		random_vec3();
 t_vec3		random_vec3_min_max(double min, double max);
 bool 		near_zero(t_vec3 e); 
+t_vec3		random_cosine_direction(void);
 
 inline t_vec3 unit_vector(t_vec3 v)
 {

@@ -160,3 +160,16 @@ bool near_zero(t_vec3 e)
 	const double s = 1e-8;
 	return (fabs(e.x) < s) && (fabs(e.y) < s) && (fabs(e.z) < s);
 }
+
+t_vec3 random_cosine_direction(void) 
+{
+    double r1 = random_d();
+    double r2 = random_d();
+
+    double phi = 2 * PI * r1;
+    double x = cos(phi)*sqrt(r2);
+    double y = sin(phi)*sqrt(r2);
+    double z = sqrt(1-r2);
+
+    return vec3(x, y, z);
+}

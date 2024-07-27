@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/23 15:43:42 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/27 18:06:13 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/27 18:58:56 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "ray.h"
 #include "vec3.h"
 #include "color.h"
+#include "onb.h"
 
 void lambertian_init_tex(t_lambertian *lambertian_material, t_texture *tex) 
 {
@@ -50,32 +51,39 @@ void diffuse_light_init(t_diffuse_light *light, t_texture *texture)
 	light->texture = texture;
 }
 
-bool noscatter(void *self, const t_ray *r_in, const t_hit_record *rec, t_color *attenuation, t_ray *scattered)
+bool noscatter(void *self, const t_ray *r_in, const t_hit_record *rec, t_color *attenuation, t_ray *scattered, double *pdf) 
 {
 	(void)self;
 	(void)r_in;
 	(void)rec;
 	(void)attenuation;
 	(void)scattered;
+	(void)pdf;
 	return false;
 }
 /*
  * scatter function for a lambertian material
  */
-bool lambertian_scatter(void* self, const t_ray *r_in, const t_hit_record *rec, t_color *attenuation, t_ray *scattered) 
+bool lambertian_scatter(void* self, const t_ray *r_in, const t_hit_record *rec, t_color *attenuation, t_ray *scattered, double *pdf)  
 {
 	(void)r_in;
+	t_onb uvw;
+	onb_build_from_w(&uvw, &(rec->normal));
 	t_lambertian *lamb = (t_lambertian *)self;
-	t_vec3 scatter_direction = vec3add(rec->normal, random_unit_vector());
-	if (near_zero(scatter_direction))
-		scatter_direction = rec->normal;
-    *scattered = ray(rec->p, scatter_direction, r_in->tm);
-    if (lamb->texture && lamb->texture->value) {
-         *attenuation = lamb->texture->value(lamb->texture, rec->u, rec->v, &rec->p);
-   } else {
-        // Fallback or error handling if texture or value function is not set
-        *attenuation = lamb->albedo; // Example fallback color
-    }
+	//t_vec3 scatter_direction = vec3add(rec->normal, random_unit_vector());
+	t_vec3 scatter_direction = onb_local_vec(&uvw, random_cosine_direction());
+	// if (near_zero(scatter_direction))
+	// 	scatter_direction = rec->normal;
+    *scattered = ray(rec->p, unit_vector(scatter_direction), r_in->tm);
+    *attenuation = lamb->texture->value(lamb->texture, rec->u, rec->v, &rec->p);
+	*pdf = dot(uvw.w, scattered->dir) / PI;
+	// if (lamb->texture && lamb->texture->value) {
+    //      *attenuation = lamb->texture->value(lamb->texture, rec->u, rec->v, &rec->p);
+
+	// } else {
+    //     // Fallback or error handling if texture or value function is not set
+    //     *attenuation = lamb->albedo; // Example fallback color
+    // }
 
     return true; 
 }
@@ -94,8 +102,9 @@ double lambertian_scatter_pdf(void* self, const t_ray *r_in, const t_hit_record 
 /*
  * scatter function for a metal material
  */
-bool metal_scatter(void *self, const t_ray* r_in, const t_hit_record *rec, t_color *attenuation, t_ray *scattered)
+bool metal_scatter(void *self, const t_ray* r_in, const t_hit_record *rec, t_color *attenuation, t_ray *scattered, double *pdf)
 {
+	(void)pdf;
 	t_metal *metal = (t_metal *)self;
 	t_vec3 reflected = reflect(r_in->dir, rec->normal);
 	reflected = unit_vector(vec3add(reflected, vec3multscalar(random_unit_vector(), metal->fuzz)));
@@ -107,8 +116,9 @@ bool metal_scatter(void *self, const t_ray* r_in, const t_hit_record *rec, t_col
 /*
  * scatter function for a dielectric material
  */
-bool dielectric_scatter(void *self, const t_ray* r_in, const t_hit_record *rec, t_color *attenuation, t_ray *scattered)
+bool dielectric_scatter(void *self, const t_ray* r_in, const t_hit_record *rec, t_color *attenuation, t_ray *scattered, double *pdf)	
 {
+	(void)pdf;
 	t_dielectric *dielectric = (t_dielectric *)self;
 	*attenuation = color(1.0, 1.0, 1.0);
 	double ri = rec->front_face ? (1.0 / dielectric->refraction_index) : dielectric->refraction_index;
