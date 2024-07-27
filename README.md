@@ -87,7 +87,24 @@ OK I dont see much difference in the image quality. I am really looking forward 
 <img src="assets/optimisedcornell1.png" alt="after" style="width: 45%;display: inline-block;" />
 </div>
 
+## Density Functions
 
+Here it gets interesting. As in the book:
+> The ray_color function that we wrote in the first two books, while elegant in its simplicity, has a fairly major problem. Small light sources create too much noise. This is because our uniform sampling doesn’t sample these light sources often enough. Light sources are only sampled if a ray scatters toward them, but this can be unlikely for a small light, or a light that is far away. If the background color is black, then the only real sources of light in the scene are from the lights that are actually placed about the scene
+
+This is exacly what I think when I see the cornells box with the light source. The light source is so small that it is not sampled enough and the image is very noisy.
+
+The book here explains the PDF (Probability Density Function) and how to use it to sample the light sources more efficiently.
+We want to sample the light sources more often than the other parts of the scene but without have a too big bias in the image... 
+
+We look again at our random double generator function and we introduce the concept of importance sampling.  
+A nonuniform PDF “steers” more samples to where the PDF is big, and fewer samples to where the PDF is small. By this sampling, we would expect less noise in the places where the PDF is big and more noise where the PDF is small.  
+for MMonte Carlo ray tracers 
+- we have an integral of $f(x)$ over some domain $[a,b]$
+- we pick a PDF p that is non-zero and non-negative over $[a,b]$
+- average a whole many samples of $f(r)/p(r)$ where r is a random number with PDF p
+
+Any choice of PDF p will always converge to the right answer, but the closer that p approximates f, the faster that it will converge. 
 
 ## Links
 - [Raytracing in one weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
