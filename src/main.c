@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/22 14:45:44 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/26 16:50:34 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/27 13:34:34 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,45 @@
 #include "translated.h"
 #include "rotated.h"
 
+// approximate the value of PI using monte carlo method w jittering
 int main()
+{
+	int inside_circle_stratified = 0;
+	int sqrt_N = 1000;
+	for (int i = 0; i < sqrt_N; i++)
+	{
+		for (int j = 0; j < sqrt_N; j++)
+		{
+			double x = (i + random_double(0, 1)) / sqrt_N;
+			double y = (j + random_double(0, 1)) / sqrt_N;
+			if (x * x + y * y < 1)
+				inside_circle_stratified++;
+		}
+	}
+	printf("PI is approximately %f\n", 4 * inside_circle_stratified / (double)(sqrt_N * sqrt_N));
+    //PI is approximately 3.141660
+}
+
+
+// approximate the value of PI using monte carlo method
+int montecarlo_no_jittering()
+{
+	int N = 1000000;
+	int inside_circle = 0;
+	for (int i = 0; i < N; i++)
+	{
+		double x = random_double(-1, 1);
+		double y = random_double(-1, 1);
+		if (x * x + y * y < 1)
+			inside_circle++;
+	}
+	printf("PI is approximately %f\n", 4 * inside_circle / (double)N);
+	return 0;
+}
+
+
+
+int cornells()
 {
 	// the cornells box
 	t_solid_color red;

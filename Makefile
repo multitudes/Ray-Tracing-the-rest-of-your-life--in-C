@@ -1,4 +1,4 @@
-NAME = inaweek
+NAME = restofyourlife
 
 CC = cc
 
@@ -36,8 +36,6 @@ build:
 $(NAME): $(OBJS) $(HDRS)
 	$(CC) $(CFLAGS) $(OBJS) $(LIBS) $(INCLUDE) -o $(NAME)
 
-# %.o: %.c
-# 	@$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDE) && printf "Compiling: $(notdir $<)"
 
 clean:
 	rm -f $(OBJECTS) *~
@@ -49,6 +47,6 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re libmlx
+.PHONY: all clean fclean re
 
 
