@@ -158,7 +158,51 @@ So the first step is a test with hardcoded values...
 <img src="assets/optimizedcornell2.png" alt="test with pdf " style="width: 45%;display: inline-block;" />
 </div>
 
-it looks good... next we will work on it cleaning up the code and...
+it looks good... So it is working
+
+## Albedo recap
+When we simulate light propagation, all we're doing is simulating the movement of photons through a space. Every photon has a unique energy and wavelength associated by the Planck constant: 
+
+$$E = \frac{hc}{\lambda}$$
+
+If you remember your formulas here's what each symbol represents:
+
+- $ E $: The energy of the photon.
+- $ h $: Planck's constant, which is approximately $ 6.626 \times 10^{-34} $ Joule seconds (Js).
+- $ c $: The speed of light in a vacuum, which is approximately $ 3 \times 10^8 $ meters per second (m/s).
+- $ \lambda $: The wavelength of the photon, typically measured in meters (m).
+
+The energy $ E $ of a photon is inversely proportional to its wavelength $\lambda $. In other words, as the wavelength of the photon decreases, its energy increases, and vice versa.
+
+- Planck's constant $ h $: This is a fundamental constant in quantum mechanics that relates the energy of a photon to its frequency.
+- Speed of light $ c $: This is the speed at which light travels in a vacuum.
+- Wavelength $ \lambda $: This is the distance between successive peaks (or troughs) of the electromagnetic wave.
+
+### Derivation
+
+The equation can be derived from the relationship between the energy of a photon and its frequency $ \nu $:
+
+$$ E = h\nu $$
+
+Since the speed of light \( c \) is related to the wavelength and frequency by the equation:
+
+$$ c = \lambda \nu $$
+
+We can solve for the frequency $ \nu $:
+
+$$ \nu = \frac{c}{\lambda} $$
+
+Substituting this into the energy equation:
+
+$$ E = h \left( \frac{c}{\lambda} \right) $$
+
+This simplifies to:
+
+$$ E = \frac{hc}{\lambda} $$
+
+
+
+In summary, the formula \( E = \frac{hc}{\lambda} \) provides a direct relationship between the energy of a photon and its wavelength, highlighting the wave-particle duality of light.
 
 ## Links
 - [Raytracing in one weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
