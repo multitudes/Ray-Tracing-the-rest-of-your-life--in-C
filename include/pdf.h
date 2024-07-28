@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/28 15:05:52 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/28 17:00:51 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/28 17:34:27 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,10 @@ typedef struct	s_hittable_pdf
 	t_hittable *object;
 }				t_hittable_pdf;
 
+typedef struct	s_mixture_pdf
+{
+	t_pdf	p[2];
+}				t_mixture_pdf;
 
 double sphere_pdf_value(void *self, const t_vec3 *direction);
 t_vec3 sphere_pdf_generate(void *self);
@@ -54,6 +58,8 @@ void hittable_pdf_init(t_hittable_pdf *hittable_pdf, t_hittable *object, const t
 double hittable_pdf_value(void *self, const t_vec3 *direction);
 t_vec3 hittable_pdf_generate(void *self);
 
-
+void mixture_pdf_init(t_mixture_pdf *mixture_pdf, t_pdf *p0, t_pdf *p1);
+double mixture_pdf_value(void *self, const t_vec3 *direction);
+t_vec3 mixture_pdf_generate(void *self);
 
 #endif

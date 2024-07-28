@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/23 10:28:07 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/28 16:59:16 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/28 18:57:24 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,10 +164,25 @@ t_color	ray_color(t_camera cam, t_ray *r, const int depth, const t_hittablelist 
 	if (!rec.mat->scatter(rec.mat, r, &rec, &attenuation, &scattered, &pdf_val))
 		return color_from_emission;
 	
+
+	
 	t_hittable_pdf light_pdf;
 	hittable_pdf_init(&light_pdf, lights->list[0], &rec.p);
-    scattered = ray(rec.p, hittable_pdf_generate(&light_pdf), r->tm);
-    pdf_val = hittable_pdf_value(&light_pdf, &scattered.dir);
+
+	t_cosine_pdf surface_pdf;
+	cosine_pdf_init(&surface_pdf, &rec.normal);
+	
+	// t_mixture_pdf mix_pdf;
+	// mixture_pdf_init(&mix_pdf, (t_pdf *)&light_pdf, (t_pdf *)&cosine_pdf);
+
+	if (random_d() < 0.5)
+		scattered = ray(rec.p, hittable_pdf_generate(&light_pdf), r->tm);
+	else
+		scattered = ray(rec.p, cosine_pdf_generate(&surface_pdf), r->tm);
+
+    // scattered = ray(rec.p, mixture_pdf_generate(&mix_pdf), r->tm);
+
+    pdf_val = 0.5 * cosine_pdf_value(&surface_pdf, &scattered.dir) + 0.5 * hittable_pdf_value(&light_pdf, &scattered.dir);
 
 	double scattering_pdf = rec.mat->scattering_pdf(rec.mat, r, &rec, &scattered);
 

@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/28 15:08:47 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/28 17:14:29 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/28 17:29:52 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,3 +101,23 @@ t_vec3 hittable_pdf_generate(void *self)
 	return hittable_pdf->object->random(hittable_pdf->object, &hittable_pdf->origin);
 }
 
+void mixture_pdf_init(t_mixture_pdf *mixture_pdf, t_pdf *p0, t_pdf *p1)
+{
+	mixture_pdf->p[0] = *p0;
+	mixture_pdf->p[1] = *p1;
+}
+
+double	mixture_pdf_value(void *self, const t_vec3 *direction)
+{
+	t_mixture_pdf *mixture_pdf = (t_mixture_pdf *)self;
+	return 0.5 * mixture_pdf->p[0].value(&mixture_pdf->p[0], direction) + 0.5 * mixture_pdf->p[1].value(&mixture_pdf->p[1], direction);
+}
+
+t_vec3	mixture_pdf_generate(void *self)
+{
+	t_mixture_pdf *mixture_pdf = (t_mixture_pdf *)self;
+	if (random_d() < 0.5)
+		return mixture_pdf->p[0].generate(&mixture_pdf->p[0]);
+	else
+		return mixture_pdf->p[1].generate(&mixture_pdf->p[1]);
+}

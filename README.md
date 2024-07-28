@@ -336,6 +336,9 @@ bool lambertian_scatter(void* self, const t_ray *r_in, const t_hit_record *rec, 
     return true; 
 }
 ```
+<div style="text-align: center;">
+<img src="assets/cornellrefactored.png" alt="test with pdf " style="width: 45%;display: inline-block;" />
+</div>
 
 This optimisation is not yet visible in the image.  
 The problem with sampling uniformly over all directions is that lights are no more likely to be sampled than any arbitrary or unimportant direction.
@@ -389,9 +392,22 @@ We will add a new function to our material struct to sample a direction towards 
 
 ```
 
+this is the result combining the lambertian and light pdfs.
+<div style="text-align: center;">
+<img src="assets/cornellsoptimized4.png" alt="test with pdf " style="width: 45%;display: inline-block;" />
+</div>
+
+The mixture-density approach is an alternative to having more traditional shadow rays.
 
 
+TODO:
 
+- add the pdf function for the sphere. 
+- fix the pdf for materials like meta and dielectric which are now incidentally broken by the refactoring
+- still need x and z rotations. 
+- cyclinder? and its pdfs
+- more lights and colors
+- bump mapping, should be easy to do when we have the normal mapping and the texture mapping
 
 
 
