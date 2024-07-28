@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/23 10:28:07 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/27 19:19:13 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/28 15:37:34 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include <limits.h>
 #include "rtweekend.h"
 #include <stdio.h>
+#include "pdf.h"
 
 /*
  * camera
@@ -151,39 +152,53 @@ t_color	ray_color(t_camera cam, t_ray *r, const int depth, const t_hittablelist 
         return color(0,0,0);
 	
 	if (!world->hit(world, r, interval(0.001, INFINITY), &rec))
-		return cam.background; // it should be the cam beckground but since this is c and raycolor is not a member func i have no access to cam
+		return cam.background;
 	
 	t_ray scattered;
 	t_color attenuation;
-	double pdf;	
+	
+	
+	
+	
+	
+	
+	double pdf_val;	
 	
 	t_color color_from_emission = rec.mat->emit(rec.mat, &rec, rec.u, rec.v, rec.p);
 	
-	if (!rec.mat->scatter(rec.mat, r, &rec, &attenuation, &scattered, &pdf))
+	if (!rec.mat->scatter(rec.mat, r, &rec, &attenuation, &scattered, &pdf_val))
 		return color_from_emission;
 		
+	t_cosine_pdf surface_pdf;
+	cosine_pdf_init(&surface_pdf, &rec.normal);
+	scattered = ray(rec.p, cosine_pdf_generate(&surface_pdf), r->tm);
+	pdf_val = cosine_pdf_value(&surface_pdf, &scattered.dir);
+
 	
-	t_point3 on_light = point3(random_double(213,343), 554, random_double(227,332));
-	t_point3 to_light = vec3substr(on_light, rec.p);
-	double distance_squared = length_squared(to_light);
-	to_light = unit_vector(to_light);
+	
+	// t_point3 on_light = point3(random_double(213,343), 554, random_double(227,332));
+	// t_point3 to_light = vec3substr(on_light, rec.p);
+	// double distance_squared = length_squared(to_light);
+	// to_light = unit_vector(to_light);
 
-	if (dot(to_light, rec.normal) < 0)
-		return color_from_emission;
+	// if (dot(to_light, rec.normal) < 0)
+	// 	return color_from_emission;
 
-	double light_area = (343-213)*(332-227);
-	double light_cosine = fabs(to_light.y);
-	if (light_cosine < 0.000001)
-		return color_from_emission;
+	// double light_area = (343-213)*(332-227);
+	// double light_cosine = fabs(to_light.y);
+	// if (light_cosine < 0.000001)
+	// 	return color_from_emission;
 
-	pdf = distance_squared / (light_cosine * light_area);
-	scattered = ray(rec.p, to_light, r->tm);
+	// pdf = distance_squared / (light_cosine * light_area);
+	// scattered = ray(rec.p, to_light, r->tm);
 
 	double scattering_pdf = rec.mat->scattering_pdf(rec.mat, r, &rec, &scattered);
 
+
 	t_color attenuationxscattering_pdf = vec3multscalar(attenuation, scattering_pdf);
 	t_color color_from_scatter_partial = vec3mult(attenuationxscattering_pdf, ray_color(cam, &scattered, depth-1, world));
-	t_color color_from_scatter = vec3divscalar(color_from_scatter_partial, pdf);
+	t_color color_from_scatter = vec3divscalar(color_from_scatter_partial, pdf_val);
+	
 	
 	return vec3add(color_from_emission, color_from_scatter);
 }

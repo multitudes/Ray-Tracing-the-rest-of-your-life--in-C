@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/23 15:43:42 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/27 19:19:43 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/28 13:10:46 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,23 +68,13 @@ bool lambertian_scatter(void* self, const t_ray *r_in, const t_hit_record *rec, 
 {
 	(void)r_in;
 	t_onb uvw;
+	
 	onb_build_from_w(&uvw, &(rec->normal));
 	t_lambertian *lamb = (t_lambertian *)self;
-	//t_vec3 scatter_direction = vec3add(rec->normal, random_unit_vector());
 	t_vec3 scatter_direction = onb_local_vec(&uvw, random_cosine_direction());
-	// if (near_zero(scatter_direction))
-	// 	scatter_direction = rec->normal;
     *scattered = ray(rec->p, unit_vector(scatter_direction), r_in->tm);
     *attenuation = lamb->texture->value(lamb->texture, rec->u, rec->v, &rec->p);
 	*pdf = dot(uvw.w, scattered->dir) / PI;
-	// if (lamb->texture && lamb->texture->value) {
-    //      *attenuation = lamb->texture->value(lamb->texture, rec->u, rec->v, &rec->p);
-
-	// } else {
-    //     // Fallback or error handling if texture or value function is not set
-    //     *attenuation = lamb->albedo; // Example fallback color
-    // }
-
     return true; 
 }
 

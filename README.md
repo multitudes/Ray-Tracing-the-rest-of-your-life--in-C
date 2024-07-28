@@ -201,8 +201,205 @@ This simplifies to:
 $$ E = \frac{hc}{\lambda} $$
 
 
+> The absorption or scattering of a photon with a surface or a volume (or really anything that a photon can interact with) is probabilistically determined by the albedo of the object. Albedo can depend on color because some objects are more likely to absorb some wavelengths. 
 
-In summary, the formula \( E = \frac{hc}{\lambda} \) provides a direct relationship between the energy of a photon and its wavelength, highlighting the wave-particle duality of light.
+Interestingly some renderers are using not RGB but an approximation of how the human eye works. We have 3 main types of cones in the human eye: L, M, and S. These cones are sensitive to different wavelengths of light. The L cones are sensitive to long wavelengths, the M cones are sensitive to medium wavelengths, and the S cones are sensitive to short wavelengths. The RGB color space is a good approximation of the LMS color space.
+
+## Scattering 
+When the light scatters, it will have a directional distribution. A PDF over a solid angle.
+Lambertian is a specific type of diffuse material that requires a cos(θo) scattering distribution... 
+
+## Importance sampling
+Our goal will be to instrument our program to send a bunch of extra rays toward light sources so that our picture is less noisy. Lets construct a PDF that sends more rays to the light. 
+We add this function to our material struct
+```c
+double 			(*scattering_pdf)(void *self, const t_ray *r_in, const t_hit_record *rec, const t_ray *scattered);
+```
+and in the Lambertian material we add the function
+```c
+double lambertian_scatter_pdf(void* self, const t_ray *r_in, const t_hit_record *rec, const t_ray *scattered) 
+{
+	(void)r_in;
+	(void)self;
+	double cos_theta = dot(rec->normal, unit_vector(scattered->dir));
+        return cos_theta < 0 ? 0 : cos_theta/PI;
+}
+```
+
+
+[more math follows in book]
+
+## Orthonormal bases
+An orthonormal basis (ONB) is a collection of three mutually orthogonal unit vectors.
+We need methods to generate random directions to produce reflections off of any surface, So they need to support arbitrary surface normal vectors and ONB will come into play.
+
+Since we need to use ONB we can make a struct and utility functions for it!
+
+```c
+typedef struct 	s_onb {
+    t_vec3		u;
+	t_vec3		v;
+	t_vec3		w;
+} 				t_onb;
+```
+
+```c
+/**
+ * onb_build_from_w - Builds an orthonormal basis from a given vector.
+ * @basis: Pointer to the t_onb structure where the basis will be stored.
+ * @w: Pointer to the t_vec3 vector to align the w basis vector with.
+ *
+ * This function constructs an orthonormal basis (u, v, w) where the w vector
+ * is aligned with the given input vector. The u and v vectors are computed
+ * to be orthogonal to w and to each other, forming a right-handed coordinate
+ * system.
+ */
+void onb_build_from_w(t_onb *basis, const t_vec3 *w) 
+{
+    t_vec3 a;
+    t_vec3 v;
+    t_vec3 u;
+    t_vec3 unit_w;
+	
+	unit_w = unit_vector(*w);
+	a = (fabs(unit_w.x) > 0.9) ? vec3(0,1,0) : vec3(1,0,0);
+	v = unit_vector(cross(unit_w, a));
+	u = cross(unit_w, v);
+    basis->u = u;
+    basis->v = v;
+    basis->w = unit_w;
+}
+
+/**
+ * onb_local - Converts coordinates from the local orthonormal basis to world coordinates.
+ * @basis: Pointer to the t_onb structure representing the orthonormal basis.
+ * @a: Scalar component along the u basis vector.
+ * @b: Scalar component along the v basis vector.
+ * @c: Scalar component along the w basis vector.
+ *
+ * This function takes coordinates (a, b, c) in the local orthonormal basis
+ * defined by the given t_onb structure and converts them to world coordinates.
+ * The resulting vector is the sum of the basis vectors scaled by their respective
+ * components.
+ *
+ * Return: A t_vec3 vector representing the coordinates in world space.
+ */
+t_vec3 onb_local(const t_onb *basis, double a, double b, double c) 
+{
+	t_vec3 ua;
+	t_vec3 vb;
+	t_vec3 wc;
+	
+	ua = vec3multscalar(basis->u, a);
+	vb = vec3multscalar(basis->v, b);
+	wc = vec3multscalar(basis->w, c);
+    return vec3add(vec3add(ua, vb), wc);	
+}
+
+/**
+ * onb_local_vec - Converts a vector from the local orthonormal basis to world coordinates.
+ * @basis: Pointer to the t_onb structure representing the orthonormal basis.
+ * @a: t_vec3 vector in the local orthonormal basis.
+ *
+ * This function takes a vector 'a' in the local orthonormal basis defined by the
+ * given t_onb structure and converts it to world coordinates. The resulting vector
+ * is the sum of the basis vectors scaled by their respective components from 'a'.
+ *
+ * Return: A t_vec3 vector representing the coordinates in world space.
+ */
+t_vec3 onb_local_vec(const t_onb *basis, t_vec3 a) 
+{
+	t_vec3 uax = vec3multscalar(basis->u, a.x);
+	t_vec3 vay = vec3multscalar(basis->v, a.y);
+	t_vec3 waz = vec3multscalar(basis->w, a.z);
+    return vec3add(vec3add(uax, vay), waz);	
+}
+```
+We will add a pdf property to our scatter function in the material struct. 
+```c
+bool 			(*scatter)(void *self, const t_ray *r_in, const t_hit_record *rec, t_color *attenuation, t_ray *scattered, double *pdf);
+```
+and the lambertian scatter function will be updated to include the pdf
+
+```c
+bool lambertian_scatter(void* self, const t_ray *r_in, const t_hit_record *rec, t_color *attenuation, t_ray *scattered, double *pdf)  
+{
+	(void)r_in;
+	t_onb uvw;
+	
+	onb_build_from_w(&uvw, &(rec->normal));
+	t_lambertian *lamb = (t_lambertian *)self;
+	t_vec3 scatter_direction = onb_local_vec(&uvw, random_cosine_direction());
+    *scattered = ray(rec->p, unit_vector(scatter_direction), r_in->tm);
+    *attenuation = lamb->texture->value(lamb->texture, rec->u, rec->v, &rec->p);
+	*pdf = dot(uvw.w, scattered->dir) / PI;
+    return true; 
+}
+```
+
+This optimisation is not yet visible in the image.  
+The problem with sampling uniformly over all directions is that lights are no more likely to be sampled than any arbitrary or unimportant direction.
+
+We need the PDF of the light so as not to bias the image too much.
+
+Since we are using quite a lot of PDF's we will create a struct.
+
+So we will have different PDF's for surface `pSurface` and light `plight`.
+
+```c
+typedef struct	s_pdf
+{
+	double (*value)(void *self, const t_vec3 *direction);
+	t_vec3 (*generate)(void *self);
+}				t_pdf;
+
+
+typedef struct	s_sphere_pdf
+{
+	t_pdf	base;
+}				t_sphere_pdf;
+```
+
+For a sphere:
+```c
+double sphere_pdf_value(void *self, const t_vec3 *direction)
+{ 
+	(void)self;
+	(void)direction;
+	return 1/ (4 * PI);
+}
+
+t_vec3 sphere_pdf_generate(void *self)
+{
+	return random_unit_vector();
+}
+```
+
+So after refactoring our ray_color function in the camera we get 
+<div style="text-align: center;">
+<img src="assets/optimizedcornell3.png" alt="test with pdf " style="width: 45%;display: inline-block;" />
+</div>
+
+it is still noisy because we did not yet implement sampling toward a direction like the light which will be done next.
+
+## Sampling Directions towards a Hittable 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Links
 - [Raytracing in one weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)

@@ -169,7 +169,7 @@ t_vec3 random_cosine_direction(void)
     double phi = 2 * PI * r1;
     double x = cos(phi)*sqrt(r2);
     double y = sin(phi)*sqrt(r2);
-    double z = sqrt(1-r2);
+    double z = sqrt(1 - r2);
 
     return vec3(x, y, z);
 }
