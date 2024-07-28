@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/05 09:07:01 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/05 10:44:54 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/28 16:59:54 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,10 +41,14 @@ typedef struct s_quad
 	double		d;
 	t_vec3		normal;
 	t_vec3		w;
+	double		area;
 }				t_quad;
 
 t_quad	quad(t_point3 q, t_vec3 u, t_vec3 v, t_material *mat);
 bool	hit_quad(const void* self, const t_ray *r, t_interval ray_t,  t_hit_record *rec);
 bool	is_interior(double a, double b, t_hit_record *rec);
+
+double quad_pdf_value(const void *self, const t_point3 *orig, const t_vec3 *dir);
+t_vec3 quad_random(const void *self, const t_vec3 *o);
 
 #endif

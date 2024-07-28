@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/05 09:13:07 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/05 11:20:40 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/28 17:00:34 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@ t_quad quad(t_point3 q, t_vec3 u, t_vec3 v, t_material *mat)
 	t_quad qd;
 
 	qd.base.hit = hit_quad;
+	qd.base.pdf_value = quad_pdf_value;
+	qd.base.random = quad_random;
 	qd.q = q;
 	qd.u = u;
 	qd.v = v;
@@ -27,7 +29,7 @@ t_quad quad(t_point3 q, t_vec3 u, t_vec3 v, t_material *mat)
     qd.normal = unit_vector(n);
     qd.d = dot(qd.normal, q);
 	qd.w = vec3divscalar(n, dot(n, n));
-	
+	qd.area = length(n);
 	return (qd);
 }
 
@@ -75,4 +77,26 @@ bool is_interior(double a, double b, t_hit_record *rec)
 	rec->u = a;
 	rec->v = b;
 	return true;
+}
+
+double quad_pdf_value(const void *self, const t_point3 *orig, const t_vec3 *dir)
+{
+	const t_quad *qd = (t_quad *)self;
+	t_hit_record rec;
+	const t_ray r = ray(*orig, *dir, 0);
+	if (!hit_quad(qd, &r, interval(0.001, INFINITY), &rec))
+		return 0;
+
+	double distance_squared = length_squared(*dir) * rec.t * rec.t;	
+	double cosine = (fabs(dot(*dir, rec.normal))) / length(*dir);
+	
+	return distance_squared / (cosine * qd->area);
+}
+
+t_vec3 quad_random(const void *self, const t_point3 *orig)
+{
+	const t_quad *qd = (t_quad *)self;
+	
+	t_vec3 p = vec3add(qd->q, vec3add(vec3multscalar(qd->u, random_double(0, 1)), vec3multscalar(qd->v, random_double(0, 1))));
+	return vec3substr(p, *orig);
 }

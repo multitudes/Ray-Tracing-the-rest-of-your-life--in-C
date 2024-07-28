@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/23 10:28:07 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/28 15:37:34 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/28 16:59:16 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,7 @@ t_camera camera()
 }
 
 
-void	render(t_camera c, const t_hittablelist world)
+void	render(t_camera c, const t_hittablelist world, const t_hittablelist lights)
 {
 	// render
 	// for the book course we create a ppm image
@@ -129,7 +129,7 @@ void	render(t_camera c, const t_hittablelist world)
                 for (int s_i = 0; s_i < c.sqrt_spp; s_i++) {
 			
                     t_ray r = get_ray(&c, i, j, s_i, s_j);
-					t_color partial = ray_color(c, &r, c.max_depth, &world);
+					t_color partial = ray_color(c, &r, c.max_depth, &world, &lights);
                     pixel_color = vec3add(pixel_color, partial);
 				}
 			}
@@ -144,7 +144,7 @@ void	render(t_camera c, const t_hittablelist world)
 }
 
 
-t_color	ray_color(t_camera cam, t_ray *r, const int depth, const t_hittablelist *world)
+t_color	ray_color(t_camera cam, t_ray *r, const int depth, const t_hittablelist *world, const t_hittablelist *lights)
 {
 	t_hit_record rec;
 	
@@ -157,48 +157,25 @@ t_color	ray_color(t_camera cam, t_ray *r, const int depth, const t_hittablelist 
 	t_ray scattered;
 	t_color attenuation;
 	
-	
-	
-	
-	
-	
 	double pdf_val;	
 	
 	t_color color_from_emission = rec.mat->emit(rec.mat, &rec, rec.u, rec.v, rec.p);
 	
 	if (!rec.mat->scatter(rec.mat, r, &rec, &attenuation, &scattered, &pdf_val))
 		return color_from_emission;
-		
-	t_cosine_pdf surface_pdf;
-	cosine_pdf_init(&surface_pdf, &rec.normal);
-	scattered = ray(rec.p, cosine_pdf_generate(&surface_pdf), r->tm);
-	pdf_val = cosine_pdf_value(&surface_pdf, &scattered.dir);
-
 	
-	
-	// t_point3 on_light = point3(random_double(213,343), 554, random_double(227,332));
-	// t_point3 to_light = vec3substr(on_light, rec.p);
-	// double distance_squared = length_squared(to_light);
-	// to_light = unit_vector(to_light);
-
-	// if (dot(to_light, rec.normal) < 0)
-	// 	return color_from_emission;
-
-	// double light_area = (343-213)*(332-227);
-	// double light_cosine = fabs(to_light.y);
-	// if (light_cosine < 0.000001)
-	// 	return color_from_emission;
-
-	// pdf = distance_squared / (light_cosine * light_area);
-	// scattered = ray(rec.p, to_light, r->tm);
+	t_hittable_pdf light_pdf;
+	hittable_pdf_init(&light_pdf, lights->list[0], &rec.p);
+    scattered = ray(rec.p, hittable_pdf_generate(&light_pdf), r->tm);
+    pdf_val = hittable_pdf_value(&light_pdf, &scattered.dir);
 
 	double scattering_pdf = rec.mat->scattering_pdf(rec.mat, r, &rec, &scattered);
 
+	t_color sample_color = ray_color(cam, &scattered, depth-1, world, lights);
 
 	t_color attenuationxscattering_pdf = vec3multscalar(attenuation, scattering_pdf);
-	t_color color_from_scatter_partial = vec3mult(attenuationxscattering_pdf, ray_color(cam, &scattered, depth-1, world));
+	t_color color_from_scatter_partial = vec3mult(attenuationxscattering_pdf, sample_color);
 	t_color color_from_scatter = vec3divscalar(color_from_scatter_partial, pdf_val);
-	
 	
 	return vec3add(color_from_emission, color_from_scatter);
 }

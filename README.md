@@ -377,15 +377,17 @@ t_vec3 sphere_pdf_generate(void *self)
 
 So after refactoring our ray_color function in the camera we get 
 <div style="text-align: center;">
-<img src="assets/optimizedcornell3.png" alt="test with pdf " style="width: 45%;display: inline-block;" />
+<img src="assets/cornellsoptimized3.png" alt="test with pdf " style="width: 45%;display: inline-block;" />
 </div>
 
 it is still noisy because we did not yet implement sampling toward a direction like the light which will be done next.
 
 ## Sampling Directions towards a Hittable 
 
+We will add a new function to our material struct to sample a direction towards a hittable object. 
+```c
 
-
+```
 
 
 

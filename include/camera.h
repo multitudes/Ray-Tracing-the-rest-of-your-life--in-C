@@ -6,7 +6,7 @@
 /*   By: lbrusa <lbrusa@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/22 16:37:03 by lbrusa            #+#    #+#             */
-/*   Updated: 2024/07/27 13:54:45 by lbrusa           ###   ########.fr       */
+/*   Updated: 2024/07/28 16:58:04 by lbrusa           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,8 +50,8 @@ typedef struct	t_camera
 } 				t_camera;
 
 t_camera	camera();
-void		render(t_camera cam, const t_hittablelist world);
-t_color		ray_color(t_camera cam, t_ray *r, int max_deph, const t_hittablelist *world);
+void		render(t_camera cam, const t_hittablelist world, const t_hittablelist lights);
+t_color		ray_color(t_camera cam, t_ray *r, int max_deph, const t_hittablelist *world, const t_hittablelist *lights);
 t_ray		get_ray(t_camera *c, int u, int v, int s_i, int s_j);
 t_vec3		sample_square();
 t_point3	defocus_disk_sample(t_camera *c);
