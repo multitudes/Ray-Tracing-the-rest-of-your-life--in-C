@@ -76,9 +76,19 @@ In our camera struct we will introduce the number of samples per pixel:
     double recip_sqrt_spp;       // 1 / sqrt_spp
 
 	[in init..]
-	sqrt_spp = int(sqrt(samples_per_pixel));
+    sqrt_spp = int(sqrt(samples_per_pixel));
     pixel_samples_scale = 1.0 / (sqrt_spp * sqrt_spp);
     recip_sqrt_spp = 1.0 / sqrt_spp;
+
+// and in the render function the inner loop will change
+for (int s_j = 0; s_j < c.sqrt_spp; s_j++) {
+	for (int s_i = 0; s_i < c.sqrt_spp; s_i++) {
+		t_ray r = get_ray(&c, i, j, s_i, s_j);
+		t_color partial = ray_color(c, &r, c.max_depth, &world, &lights);
+		pixel_color = vec3add(pixel_color, partial);
+	}
+}
+
 ```
 
 before and after the optimization:
