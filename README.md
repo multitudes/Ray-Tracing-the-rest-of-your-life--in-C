@@ -89,6 +89,10 @@ for (int s_j = 0; s_j < c.sqrt_spp; s_j++) {
 	}
 }
 
+...
+and in get_ray we have a different offset
+t_vec3	offset = sample_square_stratified(c, s_i, s_j);
+
 ```
 
 before and after the optimization:
