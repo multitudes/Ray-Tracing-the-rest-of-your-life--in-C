@@ -8,7 +8,8 @@ I already have the C verion of the two previous books in my repositories:
 - [Ray-Tracing-in-One-Weekend--in-C](https://github.com/multitudes/Ray-Tracing-in-One-Weekend-in-C/tree/main)
 - [Ray-Tracing-the-next-week--in-C](https://github.com/multitudes/Ray-Tracing-The-Next-Week-in-C)  
 
-And the current repo is the third in the series.
+And the current repo is the third in the series.  
+For me the main reason to follow the third book is having a better understanding of the math involved and a better way of managing lights.  Mostly there are two ways to handle lights, using shadow rays or deciding instead to make rays more likely to go toward lights using probabilistic density functions like the book does.
 
 ## Monte Carlo Algorithms
 There are two kinds of randomized algorithms: Monte Carlo and Las Vegas.  A randomized algorithm uses some amount of randomness in its computation. A Las Vegas (LV) random algorithm always produces the correct result but its running time is probabilistic, whereas a Monte Carlo (MC) algorithm may produce a correct result for a defined running time.  
