@@ -96,13 +96,13 @@ t_vec3	offset = sample_square_stratified(c, s_i, s_j);
 ```
 
 before and after the optimization:
-
-
-OK I dont see much difference in the image quality. I am really looking forward to the part where they manage to diminish the amount of noise in the image.  
 <div style="text-align: center;">
 <img src="assets/rotations.png" alt="before" style="width: 45%;display: inline-block;" /> 
 <img src="assets/optimisedcornell1.png" alt="after" style="width: 45%;display: inline-block;" />
 </div>
+
+OK I dont see much difference in the image quality. I am really looking forward to the part where they manage to diminish the amount of noise in the image.  
+
 
 ## Density Functions
 
